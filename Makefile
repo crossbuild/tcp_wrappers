@@ -673,7 +673,7 @@ SHLIBFLAGS = -Lshared -lwrap
 shared/%.o: %.c                                                                
 	$(CC) $(CFLAGS) $(SHCFLAGS) -c $< -o $@
 
-CFLAGS	= -O2 -pipe -DFACILITY=$(FACILITY) $(ACCESS) $(PARANOID) $(NETGROUP) \
+CFLAGS	= $(RPM_OPT_FLAGS) $(shell getconf LFS_CFLAGS) -DFACILITY=$(FACILITY) $(ACCESS) $(PARANOID) $(NETGROUP) \
 	$(BUGS) $(SYSTYPE) $(AUTH) $(UMASK) \
 	-DREAL_DAEMON_DIR=\"$(REAL_DAEMON_DIR)\" $(STYLE) $(KILL_OPT) \
 	-DSEVERITY=$(SEVERITY) -DRFC931_TIMEOUT=$(RFC931_TIMEOUT) \
@@ -730,13 +730,13 @@ $(SHLIB): $(SHLIB_OBJ)
 	ln -s $(notdir $(SHLIBSOMAJ)) $(SHLIBSO)
 
 tcpd:	tcpd.o $(SHLIB)
-	$(CC) $(CFLAGS) -o $@ tcpd.o $(SHLIBFLAGS)
+	$(CC) $(CFLAGS) -pie -o $@ tcpd.o $(SHLIBFLAGS)
 
 miscd:	miscd.o $(SHLIB)
 	$(CC) $(CFLAGS) -o $@ miscd.o $(SHLIBFLAGS)
 
 safe_finger: safe_finger.o $(SHLIB)
-	$(CC) $(CFLAGS) -o $@ safe_finger.o $(SHLIBFLAGS)
+	$(CC) $(CFLAGS) -pie -o $@ safe_finger.o $(SHLIBFLAGS)
 
 TCPDMATCH_OBJ = tcpdmatch.o fakelog.o inetcf.o scaffold.o
 
@@ -744,7 +744,7 @@ tcpdmatch: $(TCPDMATCH_OBJ) $(SHLIB)
 	$(CC) $(CFLAGS) -o $@ $(TCPDMATCH_OBJ) $(SHLIBFLAGS)
 
 try-from: try-from.o fakelog.o $(SHLIB)
-	$(CC) $(CFLAGS) -o $@ try-from.o fakelog.o $(SHLIBFLAGS)
+	$(CC) $(CFLAGS) -pie -o $@ try-from.o fakelog.o $(SHLIBFLAGS)
 
 TCPDCHK_OBJ = tcpdchk.o fakelog.o inetcf.o scaffold.o
 
