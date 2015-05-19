@@ -2,6 +2,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <stdio.h>
+#include <string.h>
 #include <errno.h>
 
 #include "ip6utils.h"

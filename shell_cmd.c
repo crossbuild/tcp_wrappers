@@ -15,9 +15,13 @@ static char sccsid[] = "@(#) shell_cmd.c 1.5 94/12/28 17:42:44";
 /* System libraries. */
 
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <sys/param.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <syslog.h>
 #include <string.h>
 
