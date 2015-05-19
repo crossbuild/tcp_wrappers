@@ -166,11 +166,22 @@ struct sockaddr *sa;
 int    *len;
 {
     int     ret;
+#ifdef INET6
+    struct sockaddr_storage *sin = (struct sockaddr_storage *) sa;
+#else
     struct sockaddr_in *sin = (struct sockaddr_in *) sa;
+#endif
 
     if ((ret = getpeername(sock, sa, len)) >= 0
+#ifdef INET6
+	&& ((sin->__ss_family == AF_INET6
+	     && IN6_IS_ADDR_UNSPECIFIED(&((struct sockaddr_in6 *)sin)->sin6_addr))
+	    || (sin->ss_family == AF_INET
+		&& ((struct sockaddr_in *)sin)->sin_addr.s_addr == 0))) {
+#else
 	&& sa->sa_family == AF_INET
 	&& sin->sin_addr.s_addr == 0) {
+#endif
 	errno = ENOTCONN;
 	return (-1);
     } else {

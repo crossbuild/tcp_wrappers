@@ -26,6 +26,9 @@ extern void exit();
   * guesses. Shorter names follow longer ones.
   */
 char   *inet_files[] = {
+#ifdef INET6
+    "/usr/local/v6/etc/inet6d.conf",	/* KAME */
+#endif
     "/private/etc/inetd.conf",		/* NEXT */
     "/etc/inet/inetd.conf",		/* SYSV4 */
     "/usr/etc/inetd.conf",		/* IRIX?? */

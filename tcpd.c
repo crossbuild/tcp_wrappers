@@ -24,6 +24,7 @@ static char sccsid[] = "@(#) tcpd.c 1.10 96/02/11 17:01:32";
 #include <stdio.h>
 #include <syslog.h>
 #include <string.h>
+#include <unistd.h>
 
 #ifndef MAXPATHNAMELEN
 #define MAXPATHNAMELEN	BUFSIZ
@@ -120,7 +121,12 @@ char  **argv;
 
     /* Report request and invoke the real daemon program. */
 
+#ifdef INET6
+    syslog(allow_severity, "connect from %s (%s)",
+	   eval_client(&request), eval_hostaddr(request.client));
+#else
     syslog(allow_severity, "connect from %s", eval_client(&request));
+#endif
     closelog();
     (void) execv(path, argv);
     syslog(LOG_ERR, "error: cannot execute %s: %m", path);
