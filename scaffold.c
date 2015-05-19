@@ -20,6 +20,8 @@ static char sccs_id[] = "@(#) scaffold.c 1.6 97/03/21 19:27:24";
 #include <syslog.h>
 #include <setjmp.h>
 #include <string.h>
+#include <stdlib.h>
+
 #if defined(INET6) && !defined(USE_GETIPNODEBY)
 #include <resolv.h>
 #endif
@@ -28,7 +30,6 @@ static char sccs_id[] = "@(#) scaffold.c 1.6 97/03/21 19:27:24";
 #define	INADDR_NONE	(-1)		/* XXX should be 0xffffffff */
 #endif
 
-extern char *malloc();
 
 /* Application-specific. */
 
