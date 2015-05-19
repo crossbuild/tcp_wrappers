@@ -1,5 +1,7 @@
 # @(#) Makefile 1.23 97/03/21 19:27:20
 
+really-all: linux
+
 what:
 	@echo
 	@echo "Usage: edit the REAL_DAEMON_DIR definition in the Makefile then:"
@@ -670,7 +672,7 @@ CFLAGS	= -O2 -pipe -DFACILITY=$(FACILITY) $(ACCESS) $(PARANOID) $(NETGROUP) \
 LIB_OBJ= hosts_access.o options.o shell_cmd.o rfc931.o eval.o \
 	hosts_ctl.o refuse.o percent_x.o clean_exit.o $(AUX_OBJ) \
 	$(FROM_OBJ) fix_options.o socket.o tli.o workarounds.o \
-	update.o misc.o diag.o percent_m.o myvsyslog.o
+	update.o misc.o diag.o percent_m.o myvsyslog.o ip6utils.o
 
 FROM_OBJ= fromhost.o
 
@@ -683,6 +685,7 @@ KIT	= README miscd.c tcpd.c fromhost.c hosts_access.c shell_cmd.c \
 	tli-sequent.h misc.c diag.c ncr.c tcpdchk.c percent_m.c \
 	myvsyslog.c mystdarg.h printf.ck README.IRIX Banners.Makefile \
 	refuse.c tcpdchk.8 setenv.c inetcf.c inetcf.h scaffold.c \
+	ip6utils.c ip6utils.h \
 	scaffold.h tcpdmatch.8 README.NIS
 
 LIB	= libwrap.a
@@ -812,6 +815,7 @@ printfck:
 
 # Internal compilation dependencies.
 
+tcpd.h: ip6utils.h
 clean_exit.o: cflags
 clean_exit.o: tcpd.h
 diag.o: cflags

@@ -85,11 +85,6 @@ static int server_match();
 static int client_match();
 static int host_match();
 static int string_match();
-static int masked_match();
-#ifdef INET6
-static int masked_match4();
-static int masked_match6();
-#endif
 
 /* Size of logical line buffer. */
 
@@ -308,15 +303,17 @@ struct host_info *host;
     } else if (STR_EQ(tok, "LOCAL")) {		/* local: no dots in name */
 	char   *name = eval_hostname(host);
 	return (strchr(name, '.') == 0 && HOSTNAME_KNOWN(name));
-    } else if ((mask = split_at(tok, '/')) != 0) {	/* net/mask */
-	return (masked_match(tok, mask, eval_hostaddr(host)));
     } else {					/* anything else */
 	return (string_match(tok, eval_hostaddr(host))
 	    || (NOT_INADDR(tok) && string_match(tok, eval_hostname(host))));
     }
 }
 
-/* string_match - match string against pattern */
+/* string_match - match string against pattern 
+ * 
+ * tok = data read from /etc/hosts.*
+ * string = textual data of actual client
+ */
 
 static int string_match(tok, string)
 char   *tok;
@@ -324,13 +321,6 @@ char   *string;
 {
     int     n;
 
-#ifdef INET6
-    /* convert IPv4 mapped IPv6 address to IPv4 address */
-    if (STRN_EQ(string, "::ffff:", 7)
-	&& dot_quad_addr(string + 7) != INADDR_NONE) {
-	string += 7;
-    }
-#endif
     if (tok[0] == '.') {			/* suffix */
 	n = strlen(string) - strlen(tok);
 	return (n > 0 && STR_EQ(tok, string + n));
@@ -340,122 +330,65 @@ char   *string;
 	return (STR_NE(string, unknown));
     } else if (tok[(n = strlen(tok)) - 1] == '.') {	/* prefix */
 	return (STRN_EQ(tok, string, n));
-    } else {					/* exact match */
+    } else if (STR_EQ(tok, string))		/* exact match */
+	return (YES);
 #ifdef INET6
+    else	/* IP addresses match - not needed for IPv4 */
+    {
+	/* For simplicity we convert everything to IPv6 (or v4 mapped) */
 	struct in6_addr pat, addr;
-	int len, ret;
-	char ch;
-
+	int len, ret, prefixlen=128;
+	char ch, token[INET6_ADDRSTRLEN+1], *mask;
+	
 	len = strlen(tok);
-	if (*tok == '[' && tok[len - 1] == ']') {
-	    ch = tok[len - 1];
-	    tok[len - 1] = '\0';
-	    ret = inet_pton(AF_INET6, tok + 1, pat.s6_addr);
-	    tok[len - 1] = ch;
-	    if (ret != 1 || inet_pton(AF_INET6, string, addr.s6_addr) != 1)
-		return NO;
-	    return (!memcmp(&pat, &addr, sizeof(struct in6_addr)));
+	if (*tok == '[' && tok[len - 1] == ']') 
+	{
+		ch = tok[len - 1];
+			tok[len - 1] = '\0';
+			snprintf(token, sizeof(token), "%s", tok+1);
+			tok[len - 1] = ch;
 	}
-#endif
-	return (STR_EQ(tok, string));
-    }
-}
+	else
+		snprintf(token, sizeof(token), "%s", tok);
+	
+	/* If prefix was given, handle it */
+	if ((mask = split_at(token, '/')) != 0)
+	{
+		if (sscanf(mask, "%d", &prefixlen) != 1 || prefixlen < 0)
+		{
+			tcpd_warn ("Wrong prefix length in %s", tok);
+			return (NO);
+		}
+		
+		if (is_v4_string (token))
+			prefixlen += 96;	/* extend to v4mapped */
 
-/* masked_match - match address against netnumber/netmask */
-
-#ifdef INET6
-static int masked_match(net_tok, mask_tok, string)
-char   *net_tok;
-char   *mask_tok;
-char   *string;
-{
-    return (masked_match4(net_tok, mask_tok, string) ||
-	    masked_match6(net_tok, mask_tok, string));
-}
-
-static int masked_match4(net_tok, mask_tok, string)
-#else
-static int masked_match(net_tok, mask_tok, string)
-#endif
-char   *net_tok;
-char   *mask_tok;
-char   *string;
-{
-#ifdef INET6
-    u_int32_t net;
-    u_int32_t mask;
-    u_int32_t addr;
-#else
-    unsigned long net;
-    unsigned long mask;
-    unsigned long addr;
-#endif
-
-    /*
-     * Disallow forms other than dotted quad: the treatment that inet_addr()
-     * gives to forms with less than four components is inconsistent with the
-     * access control language. John P. Rouillard <rouilj@cs.umb.edu>.
-     */
-
-    if ((addr = dot_quad_addr(string)) == INADDR_NONE)
-	return (NO);
-    if ((net = dot_quad_addr(net_tok)) == INADDR_NONE
-	|| (mask = dot_quad_addr(mask_tok)) == INADDR_NONE) {
-#ifndef INET6
-	tcpd_warn("bad net/mask expression: %s/%s", net_tok, mask_tok);
-#endif
-	return (NO);				/* not tcpd_jump() */
-    }
-    return ((addr & mask) == net);
-}
-
-#ifdef INET6
-static int masked_match6(net_tok, mask_tok, string)
-char   *net_tok;
-char   *mask_tok;
-char   *string;
-{
-    struct in6_addr net, addr;
-    u_int32_t mask;
-    int len, mask_len, i = 0;
-    char ch;
-
-    if (inet_pton(AF_INET6, string, addr.s6_addr) != 1)
-	    return NO;
-
-    if (IN6_IS_ADDR_V4MAPPED(&addr)) {
-	if ((*(u_int32_t *)&net.s6_addr[12] = dot_quad_addr(net_tok)) == INADDR_NONE
-	 || (mask = dot_quad_addr(mask_tok)) == INADDR_NONE)
-	    return (NO);
-	return ((*(u_int32_t *)&addr.s6_addr[12] & mask) == *(u_int32_t *)&net.s6_addr[12]);
-    }
-
-    /* match IPv6 address against netnumber/prefixlen */
-    len = strlen(net_tok);
-    if (*net_tok != '[' || net_tok[len - 1] != ']')
-	return NO;
-    ch = net_tok[len - 1];
-    net_tok[len - 1] = '\0';
-    if (inet_pton(AF_INET6, net_tok + 1, net.s6_addr) != 1) {
-	net_tok[len - 1] = ch;
-	return NO;
-    }
-    net_tok[len - 1] = ch;
-    if ((mask_len = atoi(mask_tok)) < 0 || mask_len > 128)
-	return NO;
-
-    while (mask_len > 0) {
-	if (mask_len < 32) {
-	    mask = htonl(~(0xffffffff >> mask_len));
-	    if ((*(u_int32_t *)&addr.s6_addr[i] & mask) != (*(u_int32_t *)&net.s6_addr[i] & mask))
-		return NO;
-	    break;
+		if (prefixlen > 128)
+		{
+			tcpd_warn ("Prefix too long in %s", tok);
+			return (NO);
+		}
 	}
-	if (*(u_int32_t *)&addr.s6_addr[i] != *(u_int32_t *)&net.s6_addr[i])
-	    return NO;
-	i += 4;
-	mask_len -= 32;
+	
+	memset (&pat, 0, sizeof(pat));
+	memset (&addr, 0, sizeof(addr));
+
+	if (inet_pton_mapped(AF_INET6, token, &pat) != 1)
+		return (NO);
+
+	if (inet_pton_mapped(AF_INET6, string, &addr) != 1)
+	{
+		tcpd_warn("Unable to handle client address: %s", string);
+		return (NO);
+	}
+
+	if (prefixlen < 128)
+	{
+		apply_v6_prefix (&pat, prefixlen);
+		apply_v6_prefix (&addr, prefixlen);
+	}
+
+	return (!memcmp(&pat, &addr, sizeof(struct in6_addr)));
     }
-    return YES;
+#endif
 }
-#endif /* INET6 */

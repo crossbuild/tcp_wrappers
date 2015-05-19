@@ -10,6 +10,8 @@
 #include <sys/socket.h>
 #endif
 
+#include "ip6utils.h"
+
 /* Structure to describe one communications endpoint. */
 
 #define STRING_LENGTH	128		/* hosts, users, processes */
