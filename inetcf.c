@@ -81,12 +81,12 @@ char   *conf;
      * guesses.
      */
     if (conf != 0) {
-	if ((fp = fopen(conf, "r")) == 0) {
+	if ((fp = fopen(conf, "re")) == 0) {
 	    fprintf(stderr, percent_m(buf, "open %s: %m\n"), conf);
 	    exit(1);
 	}
     } else {
-	for (i = 0; inet_files[i] && (fp = fopen(inet_files[i], "r")) == 0; i++)
+	for (i = 0; inet_files[i] && (fp = fopen(inet_files[i], "re")) == 0; i++)
 	     /* void */ ;
 	if (!fp) {
 	    fprintf(stderr, "Cannot find your inetd.conf or tlid.conf file.\n");

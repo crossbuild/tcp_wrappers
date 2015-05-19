@@ -45,7 +45,7 @@ int     protocol;
     int     s;
     FILE   *fp;
 
-    if ((s = socket(domain, type, protocol)) < 0) {
+    if ((s = socket(domain, type | SOCK_CLOEXEC, protocol)) < 0) {
 	tcpd_warn("socket: %m");
 	return (0);
     } else {

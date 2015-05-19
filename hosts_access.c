@@ -173,7 +173,7 @@ struct request_info *request;
      * file descriptor leaks.
      */
 
-    if ((fp = fopen(table, "r")) != 0) {
+    if ((fp = fopen(table, "re")) != 0) {
 	tcpd_context.file = table;
 	tcpd_context.line = 0;
 	while (match == NO && xgets(sv_list, sizeof(sv_list), fp) != 0) {
@@ -283,7 +283,7 @@ struct hosts_info *host;
     int     match = NO;
     FILE   *fp;
 
-    if ((fp = fopen(path, "r")) != 0) {
+    if ((fp = fopen(path, "re")) != 0) {
 	while (fscanf(fp, "%s", tok) == 1 && !(match = host_match(tok, host)))
 	     /* void */ ;
 	fclose(fp);

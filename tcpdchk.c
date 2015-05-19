@@ -210,7 +210,7 @@ struct request_info *request;
 
     saved_context = tcpd_context;		/* stupid compilers */
 
-    if (fp = fopen(table, "r")) {
+    if (fp = fopen(table, "re")) {
 	tcpd_context.file = table;
 	tcpd_context.line = 0;
 	while (xgets(sv_list, sizeof(sv_list), fp)) {

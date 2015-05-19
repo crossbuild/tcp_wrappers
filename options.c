@@ -227,7 +227,7 @@ struct request_info *request;
     FILE   *fp;
 
     sprintf(path, "%s/%s", value, eval_daemon(request));
-    if ((fp = fopen(path, "r")) != 0) {
+    if ((fp = fopen(path, "re")) != 0) {
 	while ((ch = fgetc(fp)) == 0)
 	    write(request->fd, "", 1);
 	ungetc(ch, fp);
