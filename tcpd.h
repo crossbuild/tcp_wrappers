@@ -106,8 +106,14 @@ extern unsigned long dot_quad_addr();	/* restricted inet_addr() */
 
 /* Global variables. */
 
+#ifdef HAVE_WEAKSYMS
+extern int allow_severity __attribute__ ((weak)); /* for connection logging */
+extern int deny_severity __attribute__ ((weak)); /* for connection logging */
+#else
 extern int allow_severity;		/* for connection logging */
 extern int deny_severity;		/* for connection logging */
+#endif
+
 extern char *hosts_allow_table;		/* for verification mode redirection */
 extern char *hosts_deny_table;		/* for verification mode redirection */
 extern int hosts_access_verbose;	/* for verbose matching mode */
