@@ -541,6 +541,7 @@ char   *name;
 	    return (t->value);
     tcpd_jump("bad syslog facility or severity: \"%s\"", name);
     /* NOTREACHED */
+    return 0;
 }
 
 /* severity_option - change logging severity for this event (Dave Mitchell) */

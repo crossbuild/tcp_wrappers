@@ -132,4 +132,5 @@ char  **argv;
     syslog(LOG_ERR, "error: cannot execute %s: %m", path);
     clean_exit(&request);
     /* NOTREACHED */
+    return 0;
 }
