@@ -20,6 +20,7 @@ static char sccsid[] = "@(#) tcpdchk.c 1.8 97/02/12 02:13:25";
 
 /* System libraries. */
 
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifdef INET6
@@ -33,6 +34,7 @@ static char sccsid[] = "@(#) tcpdchk.c 1.8 97/02/12 02:13:25";
 #include <errno.h>
 #include <netdb.h>
 #include <string.h>
+#include <unistd.h>
 
 extern int errno;
 extern void exit();

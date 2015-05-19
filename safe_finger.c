@@ -19,13 +19,16 @@ static char sccsid[] = "@(#) safe_finger.c 1.4 94/12/28 17:42:41";
 #endif
 
 /* System libraries */
-
+#include <stdlib.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <signal.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <pwd.h>
+#include <fcntl.h>
 
 extern void exit();
 
