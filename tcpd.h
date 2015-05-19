@@ -174,10 +174,12 @@ extern char *eval_server();		/* whatever is available */
 
 #ifdef __STDC__
 extern void sock_host(struct request_info *);
+extern void sock_hostnofd(struct request_info *);
 extern void sock_hostname(struct host_info *);
 extern void sock_hostaddr(struct host_info *);
 #else
 extern void sock_host();		/* look up endpoint addresses */
+extern void sock_hostnofd();
 extern void sock_hostname();		/* translate address to hostname */
 extern void sock_hostaddr();		/* address to printable address */
 #endif

@@ -140,6 +140,53 @@ struct request_info *request;
 #endif
 }
 
+
+
+/* sock_hostnofd - look up endpoint addresses and install conversion methods */
+
+void    sock_hostnofd(request)
+struct request_info *request;
+{
+    static struct sockaddr_storage client;
+    struct addrinfo hints, *res;
+    int     ret;
+    char    *host;
+
+    /* If the address field is non-empty and non-unknown and if the hostname
+     * field is empty or unknown, use the address field to get the sockaddr
+     * and hostname. */
+    if (strlen(request->client->addr) &&
+	    HOSTNAME_KNOWN(request->client->addr) &&
+	    (!strlen(request->client->addr) ||
+		!HOSTNAME_KNOWN(request->client->name)))
+	host = request->client->addr;
+    else
+	return;
+
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET6;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE | AI_NUMERICHOST;
+
+    ret = getaddrinfo(host, NULL, &hints, &res);
+    if (ret != 0) {
+	hints.ai_family = AF_INET;
+	ret = getaddrinfo(host, NULL, &hints, &res);
+    }
+
+    if (ret != 0) {
+	tcpd_warn("can't resolve hostname (%s): %s", host, gai_strerror(ret));
+    } else {
+	sock_methods(request);
+
+	memcpy(&client, res->ai_addr, res->ai_addrlen);
+	request->client->sin = (struct sockaddr *)&client;
+	freeaddrinfo(res);
+
+	request->client->name[0] = 0;
+    }
+}
+
 /* sock_hostaddr - map endpoint address to printable form */
 
 void    sock_hostaddr(host)

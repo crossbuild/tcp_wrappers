@@ -29,10 +29,12 @@ char   *user;
 {
     struct request_info request;
 
-    return (hosts_access(request_init(&request,
-				      RQ_DAEMON, daemon,
-				      RQ_CLIENT_NAME, name,
-				      RQ_CLIENT_ADDR, addr,
-				      RQ_USER, user,
-				      0)));
+    request_init(&request, RQ_DAEMON, daemon,
+			   RQ_CLIENT_NAME, name,
+			   RQ_CLIENT_ADDR, addr,
+			   RQ_USER, user,
+			   0);
+    sock_hostnofd(&request);
+
+    return (hosts_access(&request));
 }
