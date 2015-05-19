@@ -4,6 +4,12 @@
   * Author: Wietse Venema, Eindhoven University of Technology, The Netherlands.
   */
 
+#ifdef __STDC__
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#endif
+
 /* Structure to describe one communications endpoint. */
 
 #define STRING_LENGTH	128		/* hosts, users, processes */
@@ -61,11 +67,26 @@ extern char paranoid[];
 /* Global functions. */
 
 #if defined(TLI) || defined(PTX) || defined(TLI_SEQUENT)
+#ifdef __STDC__
+extern void fromhost(struct request_info *);
+#else
 extern void fromhost();			/* get/validate client host info */
+#endif
 #else
 #define fromhost sock_host		/* no TLI support needed */
 #endif
 
+#ifdef __STDC__
+extern int hosts_access(struct request_info *);
+extern void shell_cmd(char *);
+extern char *percent_x(char *, int, char *, struct request_info *);
+extern void rfc931(struct sockaddr *, struct sockaddr *, char *);
+extern void clean_exit(struct request_info *);
+extern void refuse(struct request_info *);
+extern char *xgets(char *, int, FILE *);
+extern char *split_at(char *, int);
+extern unsigned long dot_quad_addr(char *);
+#else
 extern int hosts_access();		/* access control */
 extern void shell_cmd();		/* execute shell command */
 extern char *percent_x();		/* do %<char> expansion */
@@ -75,6 +96,7 @@ extern void refuse();			/* clean up and exit */
 extern char *xgets();			/* fgets() on steroids */
 extern char *split_at();		/* strchr() and split */
 extern unsigned long dot_quad_addr();	/* restricted inet_addr() */
+#endif
 
 /* Global variables. */
 
@@ -117,27 +139,46 @@ extern struct request_info *request_set();	/* update request structure */
   * host_info structures serve as caches for the lookup results.
   */
 
+#ifdef __STDC__
+extern char *eval_user(struct request_info *);
+extern char *eval_hostname(struct host_info *);
+extern char *eval_hostaddr(struct host_info *);
+extern char *eval_hostinfo(struct host_info *);
+extern char *eval_client(struct request_info *);
+extern char *eval_server(struct request_info *);
+#else
 extern char *eval_user();		/* client user */
 extern char *eval_hostname();		/* printable hostname */
 extern char *eval_hostaddr();		/* printable host address */
 extern char *eval_hostinfo();		/* host name or address */
 extern char *eval_client();		/* whatever is available */
 extern char *eval_server();		/* whatever is available */
+#endif
 #define eval_daemon(r)	((r)->daemon)	/* daemon process name */
 #define eval_pid(r)	((r)->pid)	/* process id */
 
 /* Socket-specific methods, including DNS hostname lookups. */
 
+#ifdef __STDC__
+extern void sock_host(struct request_info *);
+extern void sock_hostname(struct host_info *);
+extern void sock_hostaddr(struct host_info *);
+#else
 extern void sock_host();		/* look up endpoint addresses */
 extern void sock_hostname();		/* translate address to hostname */
 extern void sock_hostaddr();		/* address to printable address */
+#endif
 #define sock_methods(r) \
 	{ (r)->hostname = sock_hostname; (r)->hostaddr = sock_hostaddr; }
 
 /* The System V Transport-Level Interface (TLI) interface. */
 
 #if defined(TLI) || defined(PTX) || defined(TLI_SEQUENT)
+#ifdef __STDC__
+extern void tli_host(struct request_info *);
+#else
 extern void tli_host();			/* look up endpoint addresses etc. */
+#endif
 #endif
 
  /*
@@ -178,42 +219,74 @@ extern struct tcpd_context tcpd_context;
   * behavior.
   */
 
+#ifdef __STDC__
+extern void process_options(char *, struct request_info *);
+#else
 extern void process_options();		/* execute options */
+#endif
 extern int dry_run;			/* verification flag */
 
 /* Bug workarounds. */
 
 #ifdef INET_ADDR_BUG			/* inet_addr() returns struct */
 #define inet_addr fix_inet_addr
+#ifdef __STDC__
+extern long fix_inet_addr(char *);
+#else
 extern long fix_inet_addr();
+#endif
 #endif
 
 #ifdef BROKEN_FGETS			/* partial reads from sockets */
 #define fgets fix_fgets
+#ifdef __STDC__
+extern char *fix_fgets(char *, int, FILE *);
+#else
 extern char *fix_fgets();
+#endif
 #endif
 
 #ifdef RECVFROM_BUG			/* no address family info */
 #define recvfrom fix_recvfrom
+#ifdef __STDC__
+extern int fix_recvfrom(int, char *, int, int, struct sockaddr *, int *);
+#else
 extern int fix_recvfrom();
+#endif
 #endif
 
 #ifdef GETPEERNAME_BUG			/* claims success with UDP */
 #define getpeername fix_getpeername
+#ifdef __STDC__
+extern int fix_getpeername(int, struct sockaddr *, int *);
+#else
 extern int fix_getpeername();
+#endif
 #endif
 
 #ifdef SOLARIS_24_GETHOSTBYNAME_BUG	/* lists addresses as aliases */
 #define gethostbyname fix_gethostbyname
+#ifdef __STDC__
+extern struct hostent *fix_gethostbyname(char *);
+#else
 extern struct hostent *fix_gethostbyname();
+#endif
 #endif
 
 #ifdef USE_STRSEP			/* libc calls strtok() */
 #define strtok	fix_strtok
+#ifdef __STDC__
+extern char *fix_strtok(char *, char *);
+#else
 extern char *fix_strtok();
+#endif
 #endif
 
 #ifdef LIBC_CALLS_STRTOK		/* libc calls strtok() */
 #define strtok	my_strtok
+#ifdef __STDC__
+extern char *my_strtok(char *, char *);
+#else
 extern char *my_strtok();
+#endif
 #endif

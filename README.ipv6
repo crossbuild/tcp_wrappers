@@ -1,0 +1,17 @@
+;; IPv6 patch for tcp_wrappers_7.6 1.6
+;; Aug 23, 1999 by Hajimu UMEMOTO <ume@mahoroba.org>
+;;
+;; This patch supports IPv4/IPv6 dual stack and IPv4-mapped IPv6 address.
+;; You can replace stock tcpd or libwrap.a with this.
+;; IPv6 address pattern is as a `[net]/prefixlen' pair.
+;; This patch was tested on KAME/FreeBSD, KAME/FreeBSD3, KAME/NetBSD,
+;; RedHat 5.1 with kernel 2.1.126, and RedHat 6.0 with kernel 2.2.10.
+;;
+;; CAUTION:
+;; Back out change for field separater.  Now, field separater is `:'
+;; not `|'.  To specify IPv6 address, enclose IPv6 address with `['
+;; and `]'.
+;;
+;; For Linux users:
+;; If your libc doesn't have sockaddr_storage, try target `linux-old'.
+

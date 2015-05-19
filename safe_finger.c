@@ -31,7 +31,7 @@ extern void exit();
 
 /* Local stuff */
 
-char    path[] = "PATH=/bin:/usr/bin:/usr/ucb:/usr/bsd:/etc:/usr/etc:/usr/sbin";
+char    path[] = "PATH=/bin:/usr/bin:/usr/sbin";
 
 #define	TIME_LIMIT	60		/* Do not keep listinging forever */
 #define	INPUT_LENGTH	100000		/* Do not keep listinging forever */

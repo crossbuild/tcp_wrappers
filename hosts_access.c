@@ -33,6 +33,7 @@ static char sccsid[] = "@(#) hosts_access.c 1.21 97/02/12 02:13:22";
 #include <errno.h>
 #include <setjmp.h>
 #include <string.h>
+#include <rpcsvc/ypclnt.h>
 
 extern char *fgets();
 extern int errno;
@@ -88,6 +89,33 @@ static int masked_match();
 #define	BUFLEN 2048
 
 /* hosts_access - host access control facility */
+
+int
+yp_get_default_domain (char **outdomain)
+{
+  static char __ypdomainname[1025] = "\0";
+  int result = YPERR_SUCCESS;;
+  *outdomain = NULL;
+
+  if (__ypdomainname[0] == '\0')
+    {
+      if (getdomainname (__ypdomainname, 1024))
+        result = YPERR_NODOM;
+      else if (strcmp (__ypdomainname, "(none)") == 0)
+        {
+          /* If domainname is not set, some Systems will return "(none)" */
+          __ypdomainname[0] = '\0';
+          result = YPERR_NODOM;
+        }
+      else
+        *outdomain = __ypdomainname;
+    }
+  else
+    *outdomain = __ypdomainname;
+
+  return result;
+}
+
 
 int     hosts_access(request)
 struct request_info *request;

@@ -44,7 +44,7 @@ what:
 #REAL_DAEMON_DIR=/usr/etc
 #
 # SysV.4 Solaris 2.x OSF AIX
-#REAL_DAEMON_DIR=/usr/sbin
+REAL_DAEMON_DIR=/usr/sbin
 #
 # BSD 4.4
 #REAL_DAEMON_DIR=/usr/libexec
@@ -143,8 +143,9 @@ freebsd:
 
 linux:
 	@make REAL_DAEMON_DIR=$(REAL_DAEMON_DIR) STYLE=$(STYLE) \
-	LIBS= RANLIB=ranlib ARFLAGS=rv AUX_OBJ=setenv.o \
-	NETGROUP= TLI= EXTRA_CFLAGS="-DBROKEN_SO_LINGER" all
+	LIBS= RANLIB=ranlib ARFLAGS=rv AUX_OBJ= \
+	NETGROUP=-DNETGROUP TLI= \
+	EXTRA_CFLAGS="-fPIC -DSYS_ERRLIST_DEFINED -DINET6=1 -Dss_family=__ss_family" all
 
 # This is good for many SYSV+BSD hybrids with NIS, probably also for HP-UX 7.x.
 hpux hpux8 hpux9 hpux10:
@@ -229,7 +230,7 @@ tandem:
 
 # Amdahl UTS 2.1.5 (Richard.Richmond@bridge.bst.bls.com)
 uts215:
-	@make REAL_DAEMON_DIR=$(REAL_DAEMON_DIR) STYLE=$(STYLE) \   
+	@make REAL_DAEMON_DIR=$(REAL_DAEMON_DIR) STYLE=$(STYLE) \
 	LIBS="-lsocket" RANLIB=echo \
 	ARFLAGS=rv AUX_OBJ=setenv.o NETGROUP=-DNO_NETGROUP TLI= all
 
@@ -472,7 +473,7 @@ BUGS = -DGETPEERNAME_BUG -DBROKEN_FGETS -DLIBC_CALLS_STRTOK
 # If your system supports vsyslog(), comment out the following definition.
 # If in doubt leave it in, it won't harm.
 
-VSYSLOG	= -Dvsyslog=myvsyslog
+#VSYSLOG	= -Dvsyslog=myvsyslog
 
 # End of the system dependencies.
 #################################
@@ -491,7 +492,7 @@ VSYSLOG	= -Dvsyslog=myvsyslog
 # Uncomment the next definition to turn on the language extensions
 # (examples: allow, deny, banners, twist and spawn).
 # 
-#STYLE	= -DPROCESS_OPTIONS	# Enable language extensions.
+STYLE	= -DPROCESS_OPTIONS	# Enable language extensions.
 
 ################################################################
 # Optional: Changing the default disposition of logfile records
@@ -514,7 +515,7 @@ VSYSLOG	= -Dvsyslog=myvsyslog
 #
 # The LOG_XXX names below are taken from the /usr/include/syslog.h file.
 
-FACILITY= LOG_MAIL	# LOG_MAIL is what most sendmail daemons use
+FACILITY= LOG_AUTHPRIV	# LOG_MAIL is what most sendmail daemons use
 
 # The syslog priority at which successful connections are logged.
 
@@ -531,7 +532,7 @@ SEVERITY= LOG_INFO	# LOG_INFO is normally not logged to the console
 # and with Solaris < 2.4. APPEND_DOT will not work with hostnames taken
 # from /etc/hosts or from NIS maps. It does work with DNS through NIS.
 #
-# DOT= -DAPPEND_DOT
+DOT= -DAPPEND_DOT
 
 ##################################################
 # Optional: Always attempt remote username lookups
@@ -610,7 +611,7 @@ TABLES	= -DHOSTS_DENY=\"/etc/hosts.deny\" -DHOSTS_ALLOW=\"/etc/hosts.allow\"
 # Paranoid mode implies hostname lookup. In order to disable hostname
 # lookups altogether, see the next section.
 
-PARANOID= -DPARANOID
+#PARANOID= -DPARANOID
 
 ########################################
 # Optional: turning off hostname lookups
@@ -649,7 +650,7 @@ HOSTNAME= -DALWAYS_HOSTNAME
 # source-routed traffic in the kernel. Examples: 4.4BSD derivatives,
 # Solaris 2.x, and Linux. See your system documentation for details.
 #
-# KILL_OPT= -DKILL_IP_OPTIONS
+#KILL_OPT= -DKILL_IP_OPTIONS
 
 ## End configuration options
 ############################
@@ -659,12 +660,12 @@ HOSTNAME= -DALWAYS_HOSTNAME
 SHELL	= /bin/sh
 .c.o:;	$(CC) $(CFLAGS) -c $*.c
 
-CFLAGS	= -O -DFACILITY=$(FACILITY) $(ACCESS) $(PARANOID) $(NETGROUP) \
+CFLAGS	= -O2 -pipe -DFACILITY=$(FACILITY) $(ACCESS) $(PARANOID) $(NETGROUP) \
 	$(BUGS) $(SYSTYPE) $(AUTH) $(UMASK) \
 	-DREAL_DAEMON_DIR=\"$(REAL_DAEMON_DIR)\" $(STYLE) $(KILL_OPT) \
 	-DSEVERITY=$(SEVERITY) -DRFC931_TIMEOUT=$(RFC931_TIMEOUT) \
 	$(UCHAR) $(TABLES) $(STRINGS) $(TLI) $(EXTRA_CFLAGS) $(DOT) \
-	$(VSYSLOG) $(HOSTNAME)
+	$(VSYSLOG)
 
 LIB_OBJ= hosts_access.o options.o shell_cmd.o rfc931.o eval.o \
 	hosts_ctl.o refuse.o percent_x.o clean_exit.o $(AUX_OBJ) \

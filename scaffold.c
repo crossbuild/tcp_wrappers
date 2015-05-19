@@ -180,10 +180,17 @@ struct request_info *request;
 
 /* ARGSUSED */
 
-void    rfc931(request)
-struct request_info *request;
+void    rfc931(rmt_sin, our_sin, dest)
+#ifndef INET6
+struct sockaddr_in *rmt_sin;
+struct sockaddr_in *our_sin;
+#else
+struct sockaddr *rmt_sin;
+struct sockaddr *our_sin;
+#endif
+char   *dest;
 {
-    strcpy(request->user, unknown);
+    strcpy(dest, unknown);
 }
 
 /* check_path - examine accessibility */
