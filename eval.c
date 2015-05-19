@@ -111,7 +111,7 @@ struct request_info *request;
 	return (hostinfo);
 #endif
     if (STR_NE(eval_user(request), unknown)) {
-	sprintf(both, "%s@%s", request->user, hostinfo);
+	snprintf(both, sizeof(both), "%s@%s", request->user, hostinfo);
 	return (both);
     } else {
 	return (hostinfo);
@@ -128,7 +128,7 @@ struct request_info *request;
     char   *daemon = eval_daemon(request);
 
     if (STR_NE(host, unknown)) {
-	sprintf(both, "%s@%s", daemon, host);
+	snprintf(both, sizeof(both), "%s@%s", daemon, host);
 	return (both);
     } else {
 	return (daemon);
